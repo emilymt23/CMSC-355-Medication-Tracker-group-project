@@ -1,0 +1,59 @@
+/* Applies to screen titles */
+.big-title {
+    -fx-font-size: 45px;            /* font size */
+    -fx-font-family: verdana;       /* choose font */
+    -fx-font-weight: bold;          /* bold text */
+    -fx-text-fill: black;         /* black text */
+    -fx-padding: 25 10;             /* pad title */
+}
+
+/* Applies to prompts */
+.med-title {
+    -fx-font-size: 25px;            /* font size */
+    -fx-font-family: verdana;       /* choose font */
+    -fx-font-weight: bold;          /* bold text */
+    -fx-text-fill: black;         /* black text */
+    -fx-padding: 25 10;             /* pad title */
+}
+
+/* Apply to all buttons to let them change color on interaction */
+.button:pressed {
+    -fx-background-color: #bbe;   /* color when pressed */
+}
+
+/* This applies to all large buttons on the menus. */
+.big-menu-button {
+    -fx-background-color: #99d;   /* gray background */
+    -fx-text-fill: #111;          /* black text */
+    -fx-font-size: 24px;            /* font size */
+    -fx-font-weight: bold;          /* bold text */
+    -fx-padding: 25 20;             /* padding (top/bottom, left/right) */
+    -fx-background-radius: 8;       /* rounded corners */
+    -fx-pref-width: 350px;          /* force button width */
+}
+
+/* This applies to all small buttons */
+.small-menu-button {
+    -fx-background-color: #99d;   /* gray background */
+    -fx-text-fill: #111;          /* black text */
+    -fx-font-size: 24px;            /* font size */
+    -fx-font-weight: bold;          /* bold text */
+    -fx-padding: 25 20;             /* padding (top/bottom, left/right) */
+    -fx-background-radius: 8;       /* rounded corners */
+    /* -fx-pref-width: 350px;       /* dont't force button width */
+}
+
+/* This applies to text input fields */
+.text-field {
+    -fx-font-size: 20px;            /* font size */
+    -fx-pref-width: 325px;          /* preferred width */
+    -fx-max-width: 325px;           /* maximum text width */
+    -fx-padding: 10px;              /* padding */
+}
+
+/* This applies to dropdowns */
+.dropdown {
+    -fx-pref-width: 125px;          /* preferred width */
+    -fx-pref-height: 30px;          /* preferred height */
+    -fx-font-size: 20px;            /* fext font size */
+}
