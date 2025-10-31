@@ -126,6 +126,7 @@ class Medication {
     }
 }
 
+
 /*
  * 
  * Main program class
@@ -217,6 +218,28 @@ public class App extends Application {
         alert.showAndWait();
     }
 
+    // Check if username is valid
+    public static boolean isValidEmail(String user){
+        if(user.equalsIgnoreCase("example@email.com")) {
+            System.out.println(user + " already exists. Choose a different email/username");
+            return false;
+        }
+        else {
+            return true;
+        }
+    }
+
+    // Check if username has valid characters
+    public static boolean isUsernameValid(String user){
+        if(user.length() < 5 || user.length() > 50){
+            return false;
+      }
+        if(!user.matches("[A-Z][A-Z-a-z0-9]*")){
+          return false;
+        }
+        return true;
+    }
+
     /* 
      *
      *  Main JavaFX method
@@ -238,6 +261,98 @@ public class App extends Application {
         ButtonType deleteButtonNo = new ButtonType("No"); // No button
         confirmDeletion.getButtonTypes().setAll(deleteButtonYes, deleteButtonNo); // Add buttons to window
         
+        /*
+         * 
+         * Login screen
+         * 
+         */
+        
+        // Title text of login
+        Label loginTitle = new Label("Create Account");
+        loginTitle.getStyleClass().add("big-title"); // Apply styling to title
+
+        // Full name text prompt
+        Label createAccountTextName = new Label("Username:");
+        createAccountTextName.getStyleClass().add("small-title"); // Apply styling to title
+
+        // Full name text field
+        TextField createAccountFieldName = new TextField();
+        createAccountFieldName.setPromptText("enter username here");
+        createAccountFieldName.getStyleClass().add("text-field"); // Apply styling to text field
+        createAccountFieldName.setStyle("-fx-max-width: 200px");
+
+        // Horizontal box for name
+        HBox createAccountHboxName = new HBox(30); // Space items
+        createAccountHboxName.setAlignment(Pos.CENTER); // Align items to the center of the box
+        createAccountHboxName.getChildren().addAll(createAccountTextName, createAccountFieldName); // Add the title and text field
+
+        // Email text prompt
+        Label createAccountTextEmail = new Label("Email:");
+        createAccountTextEmail.getStyleClass().add("small-title"); // Apply styling to title
+
+        // Email text field
+        TextField createAccountFieldEmail = new TextField();
+        createAccountFieldEmail.setPromptText("example@gmail.com");
+        createAccountFieldEmail.getStyleClass().add("text-field"); // Apply styling to text field
+        createAccountFieldEmail.setStyle("-fx-max-width: 200px");
+
+        // Horizontal box for email
+        HBox createAccountHboxEmail = new HBox(30); // Space items
+        createAccountHboxEmail.setAlignment(Pos.CENTER); // Align items to the center of the box
+        createAccountHboxEmail.getChildren().addAll(createAccountTextEmail, createAccountFieldEmail); // Add the title and text field
+
+        // Phone text prompt
+        Label createAccountTextPhone = new Label("Phone:");
+        createAccountTextPhone.getStyleClass().add("small-title"); // Apply styling to title
+
+        // Phone text field
+        TextField createAccountFieldPhone = new TextField();
+        createAccountFieldPhone.setPromptText("1234567890");
+        createAccountFieldPhone.getStyleClass().add("text-field"); // Apply styling to text field
+        createAccountFieldPhone.setStyle("-fx-max-width: 200px");
+
+        // Horizontal box for phone
+        HBox createAccountHboxPhone = new HBox(30); // Space items
+        createAccountHboxPhone.setAlignment(Pos.CENTER); // Align items to the center of the box
+        createAccountHboxPhone.getChildren().addAll(createAccountTextPhone, createAccountFieldPhone); // Add the title and text field
+
+        // Password text prompt
+        Label createAccountTextPassword = new Label("Password:");
+        createAccountTextPassword.getStyleClass().add("small-title"); // Apply styling to title
+
+        // Password text field
+        TextField createAccountFieldPassword = new TextField();
+        createAccountFieldPassword.setPromptText("password");
+        createAccountFieldPassword.getStyleClass().add("text-field"); // Apply styling to text field
+        createAccountFieldPassword.setStyle("-fx-max-width: 200px");
+
+        // Horizontal box for password
+        HBox createAccountHboxPassword = new HBox(30); // Space items
+        createAccountHboxPassword.setAlignment(Pos.CENTER); // Align items to the center of the box
+        createAccountHboxPassword.getChildren().addAll(createAccountTextPassword, createAccountFieldPassword); // Add the title and text field
+
+        // Create account button
+        Button createAccountButton = new Button("Create account");
+        createAccountButton.getStyleClass().addAll("big-menu-button", "button");
+
+        // Header for already have account
+        Label alreadyAccountHeader = new Label("Already have an account?");
+        alreadyAccountHeader.getStyleClass().add("med-title"); // Apply styling to main title
+
+        // Log in button
+        Button loginButton = new Button("Log in");
+        loginButton.getStyleClass().addAll("big-menu-button", "button");
+
+        // Create vertical container to hold buttons and text
+        VBox loginBox = new VBox(30); // Space items
+        loginBox.setAlignment(Pos.CENTER); // Align items to center of box
+        loginBox.getChildren().addAll(loginTitle, createAccountHboxName, createAccountHboxEmail, createAccountHboxPhone, createAccountHboxPassword, createAccountButton, alreadyAccountHeader, loginButton); // Add the title and buttons
+        loginBox.setStyle("-fx-background-color: lightblue"); // Set background color to blue
+
+        // Scene is the entire program window
+        Scene loginScene = new Scene(loginBox, 600, 900); // Add our container and set dimensions
+        loginScene.getStylesheets().add(getClass().getResource("style.css").toExternalForm()); // Include CSS file
+
         /*
          * 
          * Main menu scene
@@ -340,8 +455,8 @@ public class App extends Application {
         addMedPromptTextTime.getStyleClass().add("med-title"); // Apply styling to prompt
 
         // Frequency prompt text
-        Label addMedPromptTextFreq = new Label("Enter frequency:");
-        addMedPromptTextFreq.getStyleClass().add("med-title"); // Apply styling to prompt
+        //Label addMedPromptTextFreq = new Label("Enter frequency:");
+        //addMedPromptTextFreq.getStyleClass().add("med-title"); // Apply styling to prompt
 
         // Text field for entering dosage
         TextField addMedTextField2 = new TextField();
@@ -382,7 +497,7 @@ public class App extends Application {
         // Create vertical container to hold buttons and text
         VBox addMedBox2 = new VBox(30); // Space items
         addMedBox2.setAlignment(Pos.CENTER); // Align items to center of box
-        addMedBox2.getChildren().addAll(addMedTitle2, addMedPromptTextDosage, addMedHBoxDosage, addMedPromptTextTime, addMedDropdownTime, addMedPromptTextFreq, addMedHBox2); // Add the title and buttons
+        addMedBox2.getChildren().addAll(addMedTitle2, addMedPromptTextDosage, addMedHBoxDosage, addMedPromptTextTime, addMedDropdownTime, /*addMedPromptTextFreq,*/ addMedHBox2); // Add the title and buttons
         addMedBox2.setStyle("-fx-background-color: lightblue"); // Set background color to blue
 
         // Create the scene
@@ -532,6 +647,22 @@ public class App extends Application {
 
         // We have to delcare button actions at the very end because they need to reference everything else
 
+        // Login menu 'log in' button
+        loginButton.setOnAction(e -> primaryStage.setScene(mainMenuScene)); // Switch to main menu screen
+
+        // Login menu 'create account' button
+        createAccountButton.setOnAction(e -> {
+            if (!isValidEmail(createAccountFieldEmail.getText())) { // Check if inputted email is valid
+                alert("Email already taken. Please choose a different email."); // Alert user to change email
+            }
+            else if (!isUsernameValid(createAccountFieldName.getText())) { // Check if inputted username is valid
+                alert("Username must be between 5-50 characters and begin with a capital letter."); // Alert user to change email
+            }
+            else {
+                primaryStage.setScene(mainMenuScene); // Begin main scene
+            }
+        }); // Switch to main menu screen
+
         // Main menu 'add medication' button
         mainMenuMedAdd.setOnAction(e -> primaryStage.setScene(addMedScene)); // Switch to add medicine screen
 
@@ -665,7 +796,7 @@ public class App extends Application {
 
         // Initiation of program
         primaryStage.setTitle("Medication tracker"); // Set program title
-        primaryStage.setScene(mainMenuScene); // Set stage to our scene
+        primaryStage.setScene(loginScene); // Set stage to our scene
         primaryStage.show(); // Show scene
     }
 }

@@ -16,6 +16,15 @@
     -fx-padding: 25 10;             /* pad title */
 }
 
+/* Applies to prompts */
+.small-title {
+    -fx-font-size: 15px;            /* font size */
+    -fx-font-family: verdana;       /* choose font */
+    -fx-font-weight: bold;          /* bold text */
+    -fx-text-fill: black;         /* black text */
+    -fx-padding: 10 5;             /* pad title */
+}
+
 /* Apply to all buttons to let them change color on interaction */
 .button:pressed {
     -fx-background-color: #bbe;   /* color when pressed */
