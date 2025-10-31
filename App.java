@@ -240,6 +240,17 @@ public class App extends Application {
         return true;
     }
 
+    // Check if username has valid characters
+    public static boolean isPasswordValid(String password){
+        if(password.length() < 10){ // Must be at least 10 digits 
+            return false;
+      }
+        if(!password.matches("[A-Za-z0-9]*\\d[A-Za-z0-9]*")){ // Check for at least one number
+          return false;
+        }
+        return true;
+    }
+
     /* 
      *
      *  Main JavaFX method
@@ -657,6 +668,9 @@ public class App extends Application {
             }
             else if (!isUsernameValid(createAccountFieldName.getText())) { // Check if inputted username is valid
                 alert("Username must be between 5-50 characters and begin with a capital letter."); // Alert user to change email
+            }
+            else if (!isPasswordValid(createAccountFieldPassword.getText())) { // Check if inputted password is valid
+                alert("Password must be between at least 10 characters and contain at least 1 number."); // Alert user to change email
             }
             else {
                 primaryStage.setScene(mainMenuScene); // Begin main scene
