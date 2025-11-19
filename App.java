@@ -21,6 +21,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextArea;
 import javafx.stage.Stage;
 
 import java.time.LocalTime;
@@ -126,6 +127,33 @@ class Medication {
     }
 }
 
+class Report {
+    private String name; // Med name
+    private String details; // Sidde effects details
+
+    // Constructor
+    Report(String name, String details) {
+        this.name = name;
+        this.details = details;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getDetails() {
+        return details;
+    }
+
+    public void setDetails(String details) {
+        this.details = details;
+    }
+}
+
 
 /*
  * 
@@ -135,6 +163,7 @@ class Medication {
 
 public class App extends Application {
     int currentlyEditingMedication; // Store which medicine we're editing
+    int currentlyEditingReport; // Store which report we're editing
 
     public static void main(String[] args) {
         launch(args); // Launch program
@@ -183,6 +212,36 @@ public class App extends Application {
         return medications; // Return the med list
     }
 
+    // Read input file and create report objects
+    private List<Report> createReports(){
+        List<Report> reports = new ArrayList<>(); // List to store report objects
+
+        // Dynamically create reports from database file
+        Path filePath = Paths.get("reportList"); // File path string
+        int lineNumber = 0; // Int for counting line number
+
+        try (BufferedReader reader = Files.newBufferedReader(filePath, StandardCharsets.UTF_8)) { // Create file input reader
+            String line; // Hold current lineFiles.newBufferedReader(path, StandardCharsets.UTF_8
+            Report report; // Variables used to dynamically create reports
+            String name = "";
+            String details = "";
+            while ((line = reader.readLine()) != null) { // Loop through database file
+                lineNumber++; // Increment line number
+                if (lineNumber % 2 == 1) { // The first line
+                    name = line; // Use as med name
+                }
+                if (lineNumber % 2 == 0) { // The second line
+                    details = line;
+                    report = new Report(name, details); // Create report object with variables 
+                    reports.add(report); // Add to report list
+                }
+            }
+        } catch (IOException e) { // If file input error
+            System.out.println("Can't read file. Will create one to save.");
+        } 
+        return reports; // Return the report list
+    }
+
     /*
      *
      *  Wipes old medication list and recreates it from memory
@@ -203,6 +262,27 @@ public class App extends Application {
             out.close(); // Close output because VSCode told me to
         } catch (FileNotFoundException e) { // If I don't find the file
             System.out.println("File not found!"); // Cry and quit
+        } catch (UnsupportedEncodingException e) { // If there's an encoding problem
+            System.out.println("Encoding error!");
+        } 
+    }
+
+    /*
+     *
+     *  Wipes old report list and recreates it from memory
+     *
+     */
+
+    private void saveReports(List<Report> reports) { // Take external report  list
+        try {
+            PrintWriter out = new PrintWriter("reportList", "UTF-8"); // Create file writer
+            for (int i = 0; i < reports.size(); i++) { // For every report
+                out.println(reports.get(i).getName()); // Print name
+                out.println(reports.get(i).getDetails()); // Print details
+            }
+            out.close(); // Close output
+        } catch (FileNotFoundException e) { // If I don't find the file
+            System.out.println("File not found!"); // Exit
         } catch (UnsupportedEncodingException e) { // If there's an encoding problem
             System.out.println("Encoding error!");
         } 
@@ -244,7 +324,7 @@ public class App extends Application {
     public static boolean isPasswordValid(String password){
         if(password.length() < 10){ // Must be at least 10 digits 
             return false;
-      }
+        }
         if(!password.matches("[A-Za-z0-9]*\\d[A-Za-z0-9]*")){ // Check for at least one number
           return false;
         }
@@ -260,6 +340,7 @@ public class App extends Application {
     @Override
     public void start(Stage primaryStage) throws FileNotFoundException { // Main method
         List<Medication> medications = createMeds(); // List to hold medications
+        List<Report> reports = createReports(); // List to hold reports
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("H:mm"); // Formatter for converting time text to localtime objects
 
@@ -387,6 +468,10 @@ public class App extends Application {
         Button mainMenuMedDelete = new Button("Delete Medication");
         mainMenuMedDelete.getStyleClass().addAll("big-menu-button", "button");
 
+        // Reports button
+        Button mainMenuReports = new Button("Reports");
+        mainMenuReports.getStyleClass().addAll("big-menu-button", "button");
+
         // Close program button
         Button mainMenuExit = new Button("Exit");
         mainMenuExit.setOnAction(e -> {
@@ -398,7 +483,7 @@ public class App extends Application {
         // Create vertical container to hold buttons and text
         VBox mainMenuBox = new VBox(30); // Space items
         mainMenuBox.setAlignment(Pos.CENTER); // Align items to center of box
-        mainMenuBox.getChildren().addAll(mainTitle, mainMenuMedAdd, mainMenuMedEdit, mainMenuMedDelete, mainMenuExit); // Add the title and buttons
+        mainMenuBox.getChildren().addAll(mainTitle, mainMenuMedAdd, mainMenuMedEdit, mainMenuMedDelete, mainMenuReports, mainMenuExit); // Add the title and buttons
         mainMenuBox.setStyle("-fx-background-color: lightblue"); // Set background color to blue
 
         // Scene is the entire program window
@@ -445,7 +530,7 @@ public class App extends Application {
 
         // Create the scene
         Scene addMedScene = new Scene(addMedBox, 600, 900); // Create scene
-        addMedScene.getStylesheets().add(getClass().getResource("style.css").toExternalForm()); // Include CSS file (MUST BE DONE AGAIN)
+        addMedScene.getStylesheets().add(getClass().getResource("style.css").toExternalForm()); // Include CSS file (MUST BE DONE EVERY SCENE)
 
         /*
          * 
@@ -650,6 +735,215 @@ public class App extends Application {
         Scene deleteMedScene = new Scene(deleteMedBox, 600, 900); // Create scene
         deleteMedScene.getStylesheets().add(getClass().getResource("style.css").toExternalForm()); // Include CSS file
 
+        /* 
+        *
+        *  Scene for managing reports
+        *
+        */ 
+
+        // Page title
+        Label reportsTitle = new Label("Side Effect Reports");
+        reportsTitle.getStyleClass().add("big-title"); // Apply styling to title
+
+        // Create report button
+        Button reportsCreate = new Button("Create Report");
+        reportsCreate.getStyleClass().addAll("big-menu-button", "button");
+
+        // Edit report button
+        Button reportsEdit = new Button("Edit Report");
+        reportsEdit.getStyleClass().addAll("big-menu-button", "button");
+
+        // Delete report button
+        Button reportsDelete = new Button("Delete Report");
+        reportsDelete.getStyleClass().addAll("big-menu-button", "button");
+
+        // Back button
+        Button reportsBack = new Button("Back");
+        reportsBack.getStyleClass().addAll("big-menu-button", "button");
+        
+        // Create vertical container to hold buttons and text
+        VBox reportsBox = new VBox(30); // Space items
+        reportsBox.setAlignment(Pos.CENTER); // Align items to center of box
+        reportsBox.getChildren().addAll(reportsTitle, reportsCreate, reportsEdit, reportsDelete, reportsBack); // Add the title and buttons
+        reportsBox.setStyle("-fx-background-color: lightblue"); // Set background color to blue
+
+        // Create the scene
+        Scene reportsScene = new Scene(reportsBox, 600, 900); // Create scene
+        reportsScene.getStylesheets().add(getClass().getResource("style.css").toExternalForm()); // Include CSS file (MUST BE DONE AGAIN)
+
+        /* 
+        *
+        *  Scene for adding report
+        *
+        */ 
+
+        // Page title
+        Label addReportTitle = new Label("Create Report");
+        addReportTitle.getStyleClass().add("big-title"); // Apply styling to title
+
+        // Prompt text
+        Label addReportPromptText = new Label("Enter medication name:");
+        addReportPromptText.getStyleClass().add("med-title"); // Apply styling to prompt
+
+        // Text field for entering name
+        TextField addReportTextField = new TextField();
+        addReportTextField.setPromptText("Enter name here");
+        addReportTextField.getStyleClass().add("text-field"); // Apply styling to text field
+
+        // Prompt text 2
+        Label addReportPromptText2 = new Label("Enter report details:");
+        addReportPromptText2.getStyleClass().add("med-title"); // Apply styling to prompt
+
+        // Text field for entering report
+        TextArea addReportTextArea = new TextArea();
+        addReportTextArea.setPromptText("Describe side effect details here");
+        addReportTextArea.getStyleClass().add("text-area"); // Apply styling to text field
+        addReportTextArea.setWrapText(true);
+
+        // Go back button
+        Button addReportReturn = new Button("Back");
+        addReportReturn.getStyleClass().addAll("small-menu-button", "button");
+
+        // Next button
+        Button addReportSave = new Button("Save");
+        addReportSave.getStyleClass().addAll("small-menu-button", "button");
+
+        // Create horizontal box to hold bottom buttons
+        HBox addReportHBox = new HBox(30); // Space items
+        addReportHBox.setAlignment(Pos.CENTER); // Align items to the center of the box
+        addReportHBox.getChildren().addAll(addReportReturn, addReportSave); // Add the title and buttons
+        
+        // Create vertical container to hold buttons and text
+        VBox addReportBox = new VBox(10); // Space items
+        addReportBox.setAlignment(Pos.CENTER); // Align items to center of box
+        addReportBox.getChildren().addAll(addReportTitle, addReportPromptText, addReportTextField, addReportPromptText2, addReportTextArea, addReportHBox); // Add the title and buttons
+        addReportBox.setStyle("-fx-background-color: lightblue"); // Set background color to blue
+
+        // Create the scene
+        Scene addReportScene = new Scene(addReportBox, 600, 900); // Create scene
+        addReportScene.getStylesheets().add(getClass().getResource("style.css").toExternalForm()); // Include CSS file (MUST BE DONE EVERY SCENE)
+
+        /*
+
+         * Edit report scene
+         * 
+         */
+        // Page title
+        Label editReportTitle = new Label("Edit Report");
+        editReportTitle.getStyleClass().add("big-title"); // Apply styling to title
+
+        // Go back button
+        Button editReportReturn = new Button("Back");
+        editReportReturn.getStyleClass().addAll("big-menu-button", "button");
+        editReportReturn.setOnAction(e -> primaryStage.setScene(reportsScene)); // Switch to reports screen
+
+        // Create vertical container to hold scrollable report list
+        VBox editReportScrollVBox = new VBox(20);
+        editReportScrollVBox.setAlignment(Pos.CENTER); // Align items to center
+        editReportScrollVBox.setStyle("-fx-background-color: lightblue"); // Set background color to blue
+
+        // Create scrollpane to allow report list to scroll
+        ScrollPane editReportScrollPane = new ScrollPane(editReportScrollVBox); // Create scrollpane with report list vbox
+        editReportScrollPane.setFitToWidth(true); // Make VBox match ScrollPane width
+        editReportScrollPane.setStyle("-fx-background-color: lightblue"); // Set background color to blue
+
+        // Create vertical container to hold buttons and text
+        VBox editReportBox = new VBox(30); // Space items
+        editReportBox.setAlignment(Pos.CENTER); // Align items to center of box
+        editReportBox.getChildren().addAll(editReportTitle, editReportScrollPane, editReportReturn); // Add the title and buttons
+        editReportBox.setStyle("-fx-background-color: lightblue"); // Set background color to blue
+
+        // Create the scene
+        Scene editReportScene = new Scene(editReportBox, 600, 900); // Create scene
+        editReportScene.getStylesheets().add(getClass().getResource("style.css").toExternalForm()); // Include CSS file
+
+        /*
+         * 
+         * Edit report second page scene
+         * 
+         */
+
+        // Page title
+        Label editReportTitle2 = new Label("Edit Report");
+        editReportTitle2.getStyleClass().add("big-title"); // Apply styling to title
+        
+        // Prompt text
+        Label editReportPromptText = new Label("Enter medication name:");
+        editReportPromptText.getStyleClass().add("med-title"); // Apply styling to prompt
+
+        // Text field for entering name
+        TextField editReportTextField = new TextField();
+        editReportTextField.setPromptText("Enter name here");
+        editReportTextField.getStyleClass().add("text-field"); // Apply styling to text field
+
+        // Prompt text 2
+        Label editReportPromptText2 = new Label("Enter report details:");
+        editReportPromptText2.getStyleClass().add("med-title"); // Apply styling to prompt
+
+        // Text field for entering report
+        TextArea editReportTextArea = new TextArea();
+        editReportTextArea.setPromptText("Describe side effect details here");
+        editReportTextArea.getStyleClass().add("text-area"); // Apply styling to text field
+        editReportTextArea.setWrapText(true);
+
+        // Go back button
+        Button editReportReturn2 = new Button("Back");
+        editReportReturn2.getStyleClass().addAll("small-menu-button", "button");
+
+        // Save button
+        Button editReportSave = new Button("Save");
+        editReportSave.getStyleClass().addAll("small-menu-button", "button");
+
+        // Create horizontal box to hold bottom buttons
+        HBox editReportHBox = new HBox(30); // Space itms
+        editReportHBox.setAlignment(Pos.CENTER); // Align items to the center of the box
+        editReportHBox.getChildren().addAll(editReportReturn2, editReportSave); // Add the title and buttons
+        
+        // Create vertical container to hold buttons and text
+        VBox editReportBox2 = new VBox(10); // Space items
+        editReportBox2.setAlignment(Pos.CENTER); // Align items to center of box
+        editReportBox2.getChildren().addAll(editReportTitle2, editReportPromptText, editReportTextField, editReportPromptText2, editReportTextArea, editReportHBox); // Add the title and buttons
+        editReportBox2.setStyle("-fx-background-color: lightblue"); // Set background color to blue
+
+        // Create the scene
+        Scene editReportScene2 = new Scene(editReportBox2, 600, 900); // Create scene
+        editReportScene2.getStylesheets().add(getClass().getResource("style.css").toExternalForm()); // Include CSS file
+
+        /*
+         * 
+         * Delete report scene
+         * 
+         */
+
+        // Page title
+        Label deleteReportTitle = new Label("Delete Report");
+        deleteReportTitle.getStyleClass().add("big-title"); // Apply styling to title
+
+        // Go back button
+        Button deleteReportReturn = new Button("Back");
+        deleteReportReturn.getStyleClass().addAll("big-menu-button", "button");
+        deleteReportReturn.setOnAction(e -> primaryStage.setScene(reportsScene)); // Switch to main menu screen
+
+        // Create vertical container to hold scrollable report list
+        VBox deleteReportScrollVBox = new VBox(20);
+        deleteReportScrollVBox.setAlignment(Pos.CENTER); // Align items to center
+        deleteReportScrollVBox.setStyle("-fx-background-color: lightblue"); // Set background color to blue
+
+        // Create scrollpane to allow report list to scroll
+        ScrollPane deleteReportScrollPane = new ScrollPane(deleteReportScrollVBox); // Create scrollpane with report list vbox
+        deleteReportScrollPane.setFitToWidth(true); // Make VBox match ScrollPane width
+        deleteReportScrollPane.setStyle("-fx-background-color: lightblue"); // Set background color to blue
+
+        // Create vertical container to hold buttons and text
+        VBox deleteReportBox = new VBox(30); // Space items
+        deleteReportBox.setAlignment(Pos.CENTER); // Align items to center of box
+        deleteReportBox.getChildren().addAll(deleteReportTitle, deleteReportScrollPane, deleteReportReturn); // Add the title and buttons
+        deleteReportBox.setStyle("-fx-background-color: lightblue"); // Set background color to blue
+
+        // Create the scene
+        Scene deleteReportScene = new Scene(deleteReportBox, 600, 900); // Create scene
+        deleteReportScene.getStylesheets().add(getClass().getResource("style.css").toExternalForm()); // Include CSS file
+
         /*
          * 
          * Other code
@@ -805,6 +1099,114 @@ public class App extends Application {
             }
             else {
                 alert("There are no medications to delete. Please add a medication first.");
+            }
+        });
+
+        // Main menu 'reports' button
+        mainMenuReports.setOnAction(e -> primaryStage.setScene(reportsScene)); // Switch to main report screen
+
+        // Reports 'return' button
+        reportsBack.setOnAction(e -> primaryStage.setScene(mainMenuScene)); // Switch to main menu screen
+
+        // Reports 'add' button
+        reportsCreate.setOnAction(e -> primaryStage.setScene(addReportScene)); // Switch to add report screen
+
+        // Add report 'return' button
+        addReportReturn.setOnAction(e -> {
+            addReportTextField.clear();
+            addReportTextArea.clear();
+            primaryStage.setScene(reportsScene);
+        }); // Switch to main report screen
+
+        // Add report 'save' button
+        addReportSave.setOnAction(e -> {
+        if(addReportTextField.getText().trim().isEmpty() || addReportTextArea.getText().trim().isEmpty()) { // If a field is empty
+                alert("Enter information to continue, or exit.");  // Blocks until closed
+            }
+            else {
+                    String tempName = addReportTextField.getText(); // Med name
+                    String tempDetails = addReportTextArea.getText().replaceAll("\\R", " "); // Report details
+                    
+                    Report report = new Report(tempName, tempDetails); // Create new report object
+                    reports.add(report); // Add report to list
+                    saveReports(reports); // Resave report list to file
+
+                    primaryStage.setScene(reportsScene); // Return to main menu
+                    addReportTextField.clear(); // Clear input fields upon saving
+                    addReportTextArea.clear();
+            }
+        }); // Switch to main report screen
+
+        // Reports 'edit report' button
+        reportsEdit.setOnAction(e -> {
+            if (reports.size() > 0) { // If there are medicines to edit
+                editReportScrollVBox.getChildren().clear(); // Clear the vbox to start fresh
+                for (int i = 0; i < reports.size(); i++) { // For all of the reports
+                    Button button = new Button(reports.get(i).getName()); // Create new button
+                    button.setUserData(i); // Store ID as data in the button
+                    button.setOnAction(f -> { // When a button is clicked
+                        currentlyEditingReport = (int) button.getUserData(); // Store what report we're working on
+                        editReportTextField.setText(reports.get(currentlyEditingReport).getName()); // Get name from selected report
+                        editReportTextArea.setText(reports.get(currentlyEditingReport).getDetails()); // Get details from selected report
+                        primaryStage.setScene(editReportScene2); // Continue to editing details scene
+                    });
+                    button.getStyleClass().addAll("big-menu-button", "button"); // Apply styling to button
+                    button.setStyle("-fx-background-color: #9d9"); // Override and make these buttons green
+                    editReportScrollVBox.getChildren().add(button); // Add button to vbox
+                }
+                primaryStage.setScene(editReportScene); // Advance to the 'edit report' scene
+            }
+            else {
+                alert("There are no reports to edit. Please add a report first.");
+            }
+        }); // Switch to edit report screen
+
+        // Edit report 'return' button
+        editReportReturn2.setOnAction(e -> primaryStage.setScene(editReportScene)); // Switch to add medicine screen
+
+        // Edit report 'save' button
+        editReportSave.setOnAction( e -> {
+            if(editReportTextField.getText().trim().isEmpty() || editReportTextArea.getText().trim().isEmpty()) { // If field is empty
+                alert("Enter information to continue, or exit.");  // Blocks until closed
+            }
+            else {
+                reports.get(currentlyEditingReport).setName(editReportTextField.getText()); // Re-set name
+                reports.get(currentlyEditingReport).setDetails(editReportTextArea.getText().replaceAll("\\R", " ")); // Re-set details
+                saveReports(reports); // Resave report list to file
+
+                primaryStage.setScene(editReportScene); // Return to main menu
+                editReportTextField.clear(); // Clear input fields upon saving
+                editReportTextArea.clear();
+
+            }
+        });
+
+        // Reports 'delete' button
+        reportsDelete.setOnAction(e -> {
+            if (reports.size() > 0) { // If there are reports to delete
+                deleteReportScrollVBox.getChildren().clear(); // Clear the vbox to start fresh
+                for (int i = 0; i < reports.size(); i++) { // For all of the reports
+                    Button button = new Button(reports.get(i).getName()); // Create new button
+                    button.setUserData(i); // Store ID as data in the button
+                    button.setOnAction(f -> { // When a button is clicked
+                        Optional<ButtonType> confirmDeletionResult = confirmDeletion.showAndWait(); // Confirmation popup
+                        if (confirmDeletionResult.isPresent()) { // If confirmation exists (it won't if you click x on the window)
+                            if (confirmDeletionResult.get() == deleteButtonYes) { // If user clicked yes
+                                currentlyEditingReport = (int) button.getUserData(); // Store what report we're working on
+                                reports.remove(currentlyEditingReport); // Remove selected report from list
+                                saveReports(reports); // Resave report list to file
+                                primaryStage.setScene(reportsScene); // Return to main menu (forces users to reload list of reports)
+                            }
+                        }
+                }); // Go to add report scene
+                button.getStyleClass().addAll("big-menu-button", "button"); // Apply styling to button
+                button.setStyle("-fx-background-color: #d99"); // Override and make these buttons red
+                deleteReportScrollVBox.getChildren().add(button); // Add button to vbox
+                }
+                primaryStage.setScene(deleteReportScene); // Advance to the 'delete report' scene
+            }
+            else {
+                alert("There are no reports to delete. Please add a report first.");
             }
         });
 
