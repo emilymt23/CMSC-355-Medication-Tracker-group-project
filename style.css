@@ -60,6 +60,14 @@
     -fx-padding: 10px;              /* padding */
 }
 
+/* This applies to text input areas */
+.text-area {
+    -fx-font-size: 20px;            /* font size */
+    -fx-pref-width: 500px;          /* preferred width */
+    -fx-max-width: 500px;           /* maximum text width */
+    -fx-padding: 10px;              /* padding */
+}
+
 /* This applies to dropdowns */
 .dropdown {
     -fx-pref-width: 125px;          /* preferred width */
